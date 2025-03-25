@@ -2,7 +2,7 @@ from PIL import Image
 import random
 import os
 import colorsys
-from typing import List, Tuple, Optional, cast
+from typing import List, Tuple, Optional
 import json
 
 # Dynamically determine the user's Documents directory and Bitwig path
@@ -132,7 +132,7 @@ def get_biased_color_selection(source_colors_rgb: List[List[int]], num_colors_ne
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-def get_color_bias_input() -> dict[str, float]:
+def get_color_bias_input() -> Optional[dict[str, float]]:
     """Asks the user for numerical color bias amounts for R, G, B (default 1.0 for no bias)."""
     bias_amounts = {} # Use a dictionary to store bias amounts
 
@@ -178,28 +178,6 @@ def get_color_bias_input() -> dict[str, float]:
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-def preview_mf_twister_palette(hex_codes, strategy, grid_rows, grid_cols, color_bias) -> None:
-    """Displays a preview of the generated MF Twister palette with bias."""
-    strategy_out = prettify_name(strategy)
-    if color_bias:
-        bias_text = f" (Bias: {color_bias.title()})" # e.g., " (Bias: Red)"
-    else:
-        bias_text = " (No Bias)"
-
-    print(f"\nPreview of MF Twister Palette: {strategy_out}{bias_text} - {grid_cols}x{grid_rows} grid:")
-    # Print the palette for preview with color blocks (similar to create_palette_image's print)
-    for row in hex_codes:
-        for hex_code in row:
-            r = int(hex_code[1:3], 16)
-            g = int(hex_code[3:5], 16)
-            b = int(hex_code[5:7], 16)
-            color_preview = f"\033[48;2;{r};{g};{b}m  \033[0m" # ANSI color block
-            print(f"{color_preview} {hex_code}", end=" ")
-        print()
-    print()
-
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-
 def generate_unique_filename() -> str:
     strategy ="mf_twister"
     counter_file = f"{strategy}_counter.txt"
@@ -226,7 +204,7 @@ def generate_unique_filename() -> str:
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-def get_save_location_choice() -> None:
+def get_save_location_choice() -> str:
     """Asks the user for the output folder choice."""
     while True:
         choice1 = input("Save to Bitwig Color Palettes folder? (y/n, default: y): ").lower()
@@ -237,7 +215,7 @@ def get_save_location_choice() -> None:
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-def display_strategy(grid_cols, grid_rows, palette) -> None:
+def display_strategy(grid_cols: int, grid_rows: int, palette: List[List[str]]) -> None:
     unique_hex_codes_1d = list(set([hex_code for row in palette for hex_code in row])) # Flatten, convert to set, back to list
     palette_rows = []
     color_index = 0
@@ -254,7 +232,7 @@ def display_strategy(grid_cols, grid_rows, palette) -> None:
 
     grid_lines = []
     for row_index in range(grid_rows):
-        grid_lines.append(get_grid_row(palette, grid_lines, row_index, grid_cols))
+        grid_lines.append(get_grid_row(palette, row_index, grid_cols))
 
     print(f"{grid_lines[0]}")
     for i in range(1, grid_rows):
@@ -264,22 +242,14 @@ def display_strategy(grid_cols, grid_rows, palette) -> None:
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-def prettify_name(name) -> str:
+def prettify_name(name: str) -> str:
     name = name.replace('_', ' ').title()
     name = name.replace("Mf ", "MF ")
     return name
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-def get_max_name_length(strategies) -> int:
-    max_name_length = 0
-    for strategy_name in strategies.values():
-        max_name_length = max(max_name_length, len(prettify_name(strategy_name)))
-    return max_name_length
-
-# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-
-def sort_palette_by_hue_saturation(palette_hex_codes) -> List[str]:
+def sort_palette_by_hue_saturation(palette_hex_codes: List[str]) -> List[str]:
     palette_hsl_objects = []
     for hex_code in palette_hex_codes:
         r = int(hex_code[1:3], 16)
@@ -300,7 +270,7 @@ def sort_palette_by_hue_saturation(palette_hex_codes) -> List[str]:
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-def get_grid_row(palette, grid_lines, row_index, grid_cols) -> str:
+def get_grid_row(palette: List[List[str]], row_index: int, grid_cols: int) -> str:
     grid_row_line = ""
     for col_index in range(grid_cols):
         hex_color = palette[row_index][col_index]
@@ -326,7 +296,7 @@ def get_grid_size_choice() -> Tuple[int, int]:
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-def create_palette_image(hex_codes, strategy, grid_rows, grid_cols) -> str:
+def create_palette_image(hex_codes: List[str], grid_rows: int, grid_cols: int) -> str:
     """Create and save an image from the palette hex codes, with folder choice and strategy for filename."""
     # Image dimensions
     image_width = grid_cols
@@ -433,7 +403,7 @@ def main():
 
 
         # Create and save the palette image
-        create_palette_image(hex_codes, strategy, grid_rows, grid_cols)
+        create_palette_image(hex_codes, grid_rows, grid_cols)
 
         # Ask if user wants to generate another palette
         while True:
