@@ -136,7 +136,7 @@ def get_color_bias_input() -> Optional[dict[str, float]]:
     """Asks the user for numerical color bias amounts for R, G, B (default 1.0 for no bias)."""
     bias_amounts = {} # Use a dictionary to store bias amounts
 
-    print("\nEnter numerical bias amounts for Red, Green, Blue (default 1.0 for no bias):")
+    print("\nEnter numerical bias amounts for Red, Green, Blue (default 1.0 for no bias):\n")
 
     while True: # Loop for Red bias input
         r_bias_input = input("  Red bias amount (default 1.0): ").strip() # Add .strip() to remove whitespace
@@ -207,7 +207,7 @@ def generate_unique_filename() -> str:
 def get_save_location_choice() -> str:
     """Asks the user for the output folder choice."""
     while True:
-        choice1 = input("Save to Bitwig Color Palettes folder? (y/n, default: y): ").lower()
+        choice1 = input("\nSave to Bitwig Color Palettes folder? (y/n, default: y): ").lower()
         if choice1 in ['y', 'yes', 'n', 'no', '']:
             if choice1 in ['y', 'yes', '']:
                 return "bitwig_palettes"
@@ -216,6 +216,7 @@ def get_save_location_choice() -> str:
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 def display_strategy(grid_cols: int, grid_rows: int, palette: List[List[str]]) -> None:
+    print("")
     unique_hex_codes_1d = list(set([hex_code for row in palette for hex_code in row])) # Flatten, convert to set, back to list
     palette_rows = []
     color_index = 0
@@ -226,7 +227,7 @@ def display_strategy(grid_cols: int, grid_rows: int, palette: List[List[str]]) -
                 row_colors.append(unique_hex_codes_1d[color_index])
                 color_index += 1
             else:
-                row_colors.append("#000000") # Or some default color if we run out of unique colors (unlikely but for safety)
+                row_colors.append("#000000") # Or some default 11color if we run out of unique colors (unlikely but for safety)
         palette_rows.append(row_colors)
     palette = [sort_palette_by_hue_saturation(row) for row in palette_rows] # Sort palette rows in-place!
 
@@ -234,11 +235,11 @@ def display_strategy(grid_cols: int, grid_rows: int, palette: List[List[str]]) -
     for row_index in range(grid_rows):
         grid_lines.append(get_grid_row(palette, row_index, grid_cols))
 
-    print(f"{grid_lines[0]}")
+    make_indent = " " * 4
+    print(f"{make_indent + grid_lines[0]}")
     for i in range(1, grid_rows):
-        make_indent = " " * 2
         print(make_indent + grid_lines[i])
-        print("")
+    print("")
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
@@ -286,7 +287,7 @@ def get_grid_row(palette: List[List[str]], row_index: int, grid_cols: int) -> st
 def get_grid_size_choice() -> Tuple[int, int]:
     """Asks the user to choose the grid size."""
     while True:
-        grid_choice = input("Choose grid size: '1' for 16x4 or '2' for 9x3 (default: 1): ")
+        grid_choice = input("\nChoose grid size: '1' for 16x4 or '2' for 9x3 (default: 1): ")
         if grid_choice in ['1', '']:
             return 16, 4
         elif grid_choice == '2':
@@ -296,32 +297,26 @@ def get_grid_size_choice() -> Tuple[int, int]:
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-def create_palette_image(hex_codes: List[str], grid_rows: int, grid_cols: int) -> str:
+def create_palette_image(palette: List[List[str]], grid_rows: int, grid_cols: int) -> str:
     """Create and save an image from the palette hex codes, with folder choice and strategy for filename."""
-    # Image dimensions
+
     image_width = grid_cols
     image_height = grid_rows
 
-    # Create the image
     image = Image.new("RGB", (image_width, image_height))
     pixels = image.load()
 
-    # Set pixel colors
-    for row_index, row_codes in enumerate(hex_codes):
-        for col_index, hex_code in enumerate(row_codes):
-            r = int(hex_code[1:3], 16)
-            g = int(hex_code[3:5], 16)
-            b = int(hex_code[5:7], 16)
+    for col_index, col_codes in enumerate(palette):
+        for row_index, color_code in enumerate(col_codes):
+            r = int(color_code[1:3], 16)
+            g = int(color_code[3:5], 16)
+            b = int(color_code[5:7], 16)
             pixels[col_index, row_index] = (r, g, b) # type: ignore
 
-    # Generate unique filename (now with strategy name)
-    # filename = generate_unique_filename(strategy, grid_rows, grid_cols)
     filename = generate_unique_filename()
 
-    # Get user's folder choice
     save_location = get_save_location_choice()
 
-    # Determine output folder based on user choice
     base_folder = os.getcwd()
     if save_location == "bitwig_palettes":
         output_folder = BITWIG_PALETTE_DIR
@@ -330,10 +325,9 @@ def create_palette_image(hex_codes: List[str], grid_rows: int, grid_cols: int) -
     else: # save_location == "script_folder"
         output_folder = base_folder
 
-    os.makedirs(output_folder, exist_ok=True) # Ensure folder exists
+    os.makedirs(output_folder, exist_ok=True)
     filepath = os.path.join(output_folder, filename)
 
-    # Save the image
     image.save(filepath)
 
     if save_location == "bitwig_palettes":
@@ -343,22 +337,21 @@ def create_palette_image(hex_codes: List[str], grid_rows: int, grid_cols: int) -
     else:
         print(f"Pixel palette image saved to script's folder as: {filepath}")
 
-    # Print the palette for reference with color preview
-    flat_hex_codes = [hex_code for row in hex_codes for hex_code in row] # Flatten 2D to 1D list
-    sorted_hex_codes = sorted(flat_hex_codes) # Sort the 1D list of hex codes
+    flat_color_codes = [color_code for row in palette for color_code in row] # Flatten 2D to 1D list
+    sorted_color_codes = sorted(flat_color_codes) # Sort the 1D list of hex codes
 
-    print("\nHex color codes in this palette:")
-    hex_code_counter = 0
-    for hex_code in sorted_hex_codes:
-        r = int(hex_code[1:3], 16)
-        g = int(hex_code[3:5], 16)
-        b = int(hex_code[5:7], 16)
+    print("\nHex color codes in this palette:\n")
+    counter = 0
+
+    for color_code in sorted_color_codes:
+        r = int(color_code[1:3], 16)
+        g = int(color_code[3:5], 16)
+        b = int(color_code[5:7], 16)
         color_preview = f"\033[48;2;{r};{g};{b}m  \033[0m" # ANSI color block
-        print(f"{color_preview} {hex_code}", end=" ") # Print preview and hex code
-        hex_code_counter += 1 # <--- INCREMENT COUNTER
-        if (hex_code_counter % grid_cols) == 0: # <--- CONDITIONAL LINE BREAK
-            print() # New line after every grid_cols hex codes
-    print() # New line afte all hex codes
+        print(f"{color_preview} {color_code}", end=" ") # Print preview and hex code
+        counter += 1
+        if (counter % grid_cols) == 0:
+            print()
 
     return filename
 
@@ -372,14 +365,12 @@ def main():
     generate_another = True
 
     while generate_another:
-        # Get grid size choice
         grid_cols, grid_rows = get_grid_size_choice()
         grid_size_text = f"{grid_cols}x{grid_rows}"
-        print(f"Generating {grid_size_text} palette.")
+        print(f"\nGenerating {grid_size_text} palette.")
 
-        # Get strategy choice from menu
-        hex_codes = []
-        bias_amounts = None  # Initialize color_bias_choice
+        palette = []
+        bias_amounts = None
 
         bias_preview_loop = True
         while bias_preview_loop:
@@ -401,11 +392,9 @@ def main():
                 else:
                     print("Invalid choice. Please enter 'a', 's', or 'b'.")
 
+        if palette:
+            create_palette_image(palette, grid_rows, grid_cols)
 
-        # Create and save the palette image
-        create_palette_image(hex_codes, grid_rows, grid_cols)
-
-        # Ask if user wants to generate another palette
         while True:
             another_input = input("\nWould you like to generate another palette? (y/n, default: y): ").lower()  # Modified prompt to show default
             if another_input == '':  # Check for empty input
