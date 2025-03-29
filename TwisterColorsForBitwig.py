@@ -132,10 +132,70 @@ def get_biased_color_selection(source_colors_rgb: List[List[int]], num_colors_ne
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-def get_color_bias_input() -> Optional[dict[str, float]]:
-    """Asks the user for numerical color bias amounts for R, G, B (default 1.0 for no bias)."""
-    bias_amounts = {} # Use a dictionary to store bias amounts
+# def get_color_bias_input() -> Optional[dict[str, float]]:
+#     """Asks the user for numerical color bias amounts for R, G, B (default 1.0 for no bias)."""
+#     bias_amounts = {} # Use a dictionary to store bias amounts
 
+#     print("\nEnter numerical bias amounts for Red, Green, Blue (default 1.0 for no bias):\n")
+
+#     while True: # Loop for Red bias input
+#         r_bias_input = input("  Red bias amount (default 1.0): ").strip() # Add .strip() to remove whitespace
+#         if r_bias_input == '':
+#             bias_amounts['red'] = 1.0 # Default for Red
+#             break
+#         try:
+#             bias_amounts['red'] = float(r_bias_input)
+#             break
+#         except ValueError:
+#             print("Invalid input. Please enter a valid number for Red bias (e.g., 1, 1.0, 1.5).") # More informative message
+
+#     while True: # Loop for Green bias input
+#         g_bias_input = input("  Green bias amount (default 1.0): ").strip() # Add .strip()
+#         if g_bias_input == '':
+#             bias_amounts['green'] = 1.0 # Default for Green
+#             break
+#         try:
+#             bias_amounts['green'] = float(g_bias_input)
+#             break
+#         except ValueError:
+#             print("Invalid input. Please enter a valid number for Green bias (e.g., 1, 1.0, 1.5).") # More informative message
+
+#     while True: # Loop for Blue bias input
+#         b_bias_input = input("  Blue bias amount (default 1.0): ").strip() # Add .strip()
+#         if b_bias_input == '':
+#             bias_amounts['blue'] = 1.0 # Default for Blue
+#             break
+#         try:
+#             bias_amounts['blue'] = float(b_bias_input)
+#             break
+#         except ValueError:
+#             print("Invalid input. Please enter a valid number for Blue bias (e.g., 1, 1.0, 1.5).") # More informative message
+
+#     if bias_amounts.get('red') == 1.0 and bias_amounts.get('green') == 1.0 and bias_amounts.get('blue') == 1.0:
+#         return None
+#     else:
+#         return bias_amounts
+
+def get_random_color_bias_input() -> Optional[dict[str, float]]:
+    bias_amounts: Optional[dict[str, float]] = {}
+    print("\nGenerating 3 sets of random bias amounts...")
+
+    r = round(random.uniform(0.5, 2.0), 2)  # Example range, adjust as needed
+    g = round(random.uniform(0.5, 2.0), 2)
+    b = round(random.uniform(0.5, 2.0), 2)
+    print(f"  Red={r}, Green={g}, Blue={b}")
+
+    r = round(random.uniform(0.5, 2.0), 2)
+    g = round(random.uniform(0.5, 2.0), 2)
+    b = round(random.uniform(0.5, 2.0), 2)
+    bias_amounts = {'red': r, 'green': g, 'blue': b}
+
+    return bias_amounts
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+def get_manual_color_bias_inputs() -> Optional[dict[str, float]]:
+    bias_amounts: Optional[dict[str, float]] = {}
     print("\nEnter numerical bias amounts for Red, Green, Blue (default 1.0 for no bias):\n")
 
     while True: # Loop for Red bias input
@@ -171,7 +231,37 @@ def get_color_bias_input() -> Optional[dict[str, float]]:
         except ValueError:
             print("Invalid input. Please enter a valid number for Blue bias (e.g., 1, 1.0, 1.5).") # More informative message
 
-    if bias_amounts.get('red') == 1.0 and bias_amounts.get('green') == 1.0 and bias_amounts.get('blue') == 1.0:
+    return bias_amounts
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+def get_color_bias_input(default_to_random: bool, default_to_manual: bool) -> Optional[dict[str, float]]:
+    """Asks the user for numerical color bias amounts for R, G, B (default 1.0 for no bias)."""
+    bias_amounts: Optional[dict[str, float]] = {}
+
+    while True:
+        if default_to_random:
+            bias_amounts = get_random_color_bias_input()
+            break
+        if default_to_manual:
+            bias_amounts = get_manual_color_bias_inputs()
+            break
+        else:
+            print("\nChoose bias input method:\n")
+            print("  1: Randomly Generated Bias Amounts (3 options)")
+            print("  2: Manual Input (Enter numerical bias amounts for Red, Green, Blue)\n")
+
+            while True:
+                choice = input("Enter choice (1 or 2, default: 1): ").strip()
+                if choice == '' or choice == '1':
+                    bias_amounts = get_random_color_bias_input()
+                    break
+                if choice == '2':
+                    bias_amounts = get_manual_color_bias_inputs()
+                    break
+            break
+
+    if bias_amounts and bias_amounts.get('red') == 1.0 and bias_amounts.get('green') == 1.0 and bias_amounts.get('blue') == 1.0:
         return None
     else:
         return bias_amounts
@@ -217,14 +307,14 @@ def get_save_location_choice() -> str:
 
 def display_strategy(grid_cols: int, grid_rows: int, palette: List[List[str]]) -> None:
     print("")
-    unique_hex_codes_1d = list(set([hex_code for row in palette for hex_code in row])) # Flatten, convert to set, back to list
+    palette_1d = list(set([hex_code for row in palette for hex_code in row])) # Flatten, convert to set, back to list
     palette_rows = []
     color_index = 0
     for row_index in range(grid_rows): # Reconstruct 2D palette with unique colors
         row_colors = []
         for col_index in range(grid_cols):
-            if color_index < len(unique_hex_codes_1d): # Ensure we don't go out of bounds
-                row_colors.append(unique_hex_codes_1d[color_index])
+            if color_index < len(palette_1d): # Ensure we don't go out of bounds
+                row_colors.append(palette_1d[color_index])
                 color_index += 1
             else:
                 row_colors.append("#000000") # Or some default 11color if we run out of unique colors (unlikely but for safety)
@@ -322,7 +412,7 @@ def create_palette_image(palette: List[List[str]], grid_rows: int, grid_cols: in
         output_folder = BITWIG_PALETTE_DIR
     elif save_location == "generated_palettes_subfolder":
         output_folder = os.path.join(BITWIG_PALETTE_DIR, GENERATED_PALETTES_SUBFOLDER)
-    else: # save_location == "script_folder"
+    else:
         output_folder = base_folder
 
     os.makedirs(output_folder, exist_ok=True)
@@ -373,24 +463,28 @@ def main():
         bias_amounts = None
 
         bias_preview_loop = True
+        default_to_random = False
+        default_to_manual = False
         while bias_preview_loop:
-            bias_amounts = get_color_bias_input()
+            bias_amounts = get_color_bias_input(default_to_random, default_to_manual)
 
             palette = generate_palette(grid_cols, grid_rows, bias_amounts)
             display_strategy(grid_cols, grid_rows, palette)
 
             while True: # Bias preview menu loop
-                preview_action = input("Choose option: 'a' - Accept Palette, 's' - See Another Preview, 'b' - Choose Different Bias: ").lower()
+                preview_action = input("Choose option: 'n' - New random bias amounts (default), 'm' - Enter manual bias amounts, 'a' - Accept palette: ").lower()
+                if preview_action == '' or preview_action == 'n':
+                    default_to_random = True
+                    default_to_manual = False
+                    break
+                if preview_action == 'm':
+                    default_to_random = False
+                    default_to_manual = True
+                    break
                 if preview_action == 'a':
                     bias_preview_loop = False
                     break
-                elif preview_action == 's':
-                    break
-                elif preview_action == 'b':
-                    bias_preview_loop = True
-                    break
-                else:
-                    print("Invalid choice. Please enter 'a', 's', or 'b'.")
+                print("Invalid choice. Please enter 'a', 's', or 'b'.")
 
         if palette:
             create_palette_image(palette, grid_rows, grid_cols)
