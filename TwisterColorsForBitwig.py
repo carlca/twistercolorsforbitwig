@@ -4,6 +4,11 @@ import os
 import colorsys
 from typing import List, Tuple, Optional
 import json
+import colour
+# from colour.models.rgb import RGB_Colourspace
+from hilbertcurve.hilbertcurve import HilbertCurve
+from colour.models.cie_luv import xy_to_Luv_uv
+import numpy as np
 
 # Dynamically determine the user's Documents directory and Bitwig path
 USER_DOCUMENTS: str = os.path.expanduser("~/Documents")
@@ -131,50 +136,6 @@ def get_biased_color_selection(source_colors_rgb: List[List[int]], num_colors_ne
      return biased_colors_rgb
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-
-# def get_color_bias_input() -> Optional[dict[str, float]]:
-#     """Asks the user for numerical color bias amounts for R, G, B (default 1.0 for no bias)."""
-#     bias_amounts = {} # Use a dictionary to store bias amounts
-
-#     print("\nEnter numerical bias amounts for Red, Green, Blue (default 1.0 for no bias):\n")
-
-#     while True: # Loop for Red bias input
-#         r_bias_input = input("  Red bias amount (default 1.0): ").strip() # Add .strip() to remove whitespace
-#         if r_bias_input == '':
-#             bias_amounts['red'] = 1.0 # Default for Red
-#             break
-#         try:
-#             bias_amounts['red'] = float(r_bias_input)
-#             break
-#         except ValueError:
-#             print("Invalid input. Please enter a valid number for Red bias (e.g., 1, 1.0, 1.5).") # More informative message
-
-#     while True: # Loop for Green bias input
-#         g_bias_input = input("  Green bias amount (default 1.0): ").strip() # Add .strip()
-#         if g_bias_input == '':
-#             bias_amounts['green'] = 1.0 # Default for Green
-#             break
-#         try:
-#             bias_amounts['green'] = float(g_bias_input)
-#             break
-#         except ValueError:
-#             print("Invalid input. Please enter a valid number for Green bias (e.g., 1, 1.0, 1.5).") # More informative message
-
-#     while True: # Loop for Blue bias input
-#         b_bias_input = input("  Blue bias amount (default 1.0): ").strip() # Add .strip()
-#         if b_bias_input == '':
-#             bias_amounts['blue'] = 1.0 # Default for Blue
-#             break
-#         try:
-#             bias_amounts['blue'] = float(b_bias_input)
-#             break
-#         except ValueError:
-#             print("Invalid input. Please enter a valid number for Blue bias (e.g., 1, 1.0, 1.5).") # More informative message
-
-#     if bias_amounts.get('red') == 1.0 and bias_amounts.get('green') == 1.0 and bias_amounts.get('blue') == 1.0:
-#         return None
-#     else:
-#         return bias_amounts
 
 def get_random_color_bias_input() -> Optional[dict[str, float]]:
     bias_amounts: Optional[dict[str, float]] = {}
@@ -305,7 +266,7 @@ def get_save_location_choice() -> str:
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-def display_strategy(grid_cols: int, grid_rows: int, palette: List[List[str]]) -> None:
+def display_strategy_old1(grid_cols: int, grid_rows: int, palette: List[List[str]]) -> None:
     print("")
     palette_1d = list(set([hex_code for row in palette for hex_code in row])) # Flatten, convert to set, back to list
     palette_rows = []
@@ -324,6 +285,164 @@ def display_strategy(grid_cols: int, grid_rows: int, palette: List[List[str]]) -
     grid_lines = []
     for row_index in range(grid_rows):
         grid_lines.append(get_grid_row(palette, row_index, grid_cols))
+
+    make_indent = " " * 4
+    print(f"{make_indent + grid_lines[0]}")
+    for i in range(1, grid_rows):
+        print(make_indent + grid_lines[i])
+    print("")
+
+def display_strategy_old2(grid_cols: int, grid_rows: int, palette: List[List[str]]) -> None:
+    print("")
+    palette_1d = [hex_code for row in palette for hex_code in row] # Flatten to 1D list
+    unique_palette_hex_codes = sorted(list(set(palette_1d)), key=lambda hex_code: rgb_to_hls((int(hex_code[1:3], 16), int(hex_code[3:5], 16), int(hex_code[5:7], 16)))) # Flatten, convert to set, back to list and sort all colors
+
+    palette_rows = []
+    color_index = 0
+    for row_index in range(grid_rows): # Reconstruct 2D palette with unique colors
+        row_colors = []
+        for col_index in range(grid_cols):
+            if color_index < len(unique_palette_hex_codes): # Ensure we don't go out of bounds
+                row_colors.append(unique_palette_hex_codes[color_index])
+                color_index += 1
+            else:
+                row_colors.append("#000000") # Or some default color if we run out of unique colors (unlikely but for safety)
+        palette_rows.append(row_colors)
+
+    grid_lines = []
+    for row_index in range(grid_rows):
+        grid_lines.append(get_grid_row(palette_rows, row_index, grid_cols)) # Use the new palette_rows for display
+
+    make_indent = " " * 4
+    print(f"{make_indent + grid_lines[0]}")
+    for i in range(1, grid_rows):
+        print(make_indent + grid_lines[i])
+    print("")
+
+def display_strategy_old3(grid_cols: int, grid_rows: int, palette: List[List[str]]) -> None:
+    print("")
+    palette_1d = [hex_code for row in palette for hex_code in row] # Flatten to 1D list
+    unique_palette_hex_codes = sorted(list(set(palette_1d)), key=lambda hex_code: rgb_to_hls((int(hex_code[1:3], 16), int(hex_code[3:5], 16), int(hex_code[5:7], 16)))) # Flatten, convert to set, back to list and sort all colors
+
+    print("Sorted Hex Codes (First few and last few):") # Added print statement
+    print("First 5:", unique_palette_hex_codes[:min(5, len(unique_palette_hex_codes))]) # Print first few
+    print("Last 5:", unique_palette_hex_codes[max(0, len(unique_palette_hex_codes)-5):]) # Print last few
+
+    print("\nHSL values of sorted hex codes (First few and last few):") # Added print statement
+    for hex_code in unique_palette_hex_codes[:min(5, len(unique_palette_hex_codes))]: # First few
+        r = int(hex_code[1:3], 16)
+        g = int(hex_code[3:5], 16)
+        b = int(hex_code[5:7], 16)
+        hls = rgb_to_hls((r,g,b))
+        print(f"  {hex_code}: HSL={hls}")
+    if len(unique_palette_hex_codes) > 5:
+        for hex_code in unique_palette_hex_codes[max(0, len(unique_palette_hex_codes)-5):]: # Last few
+            r = int(hex_code[1:3], 16)
+            g = int(hex_code[3:5], 16)
+            b = int(hex_code[5:7], 16)
+            hls = rgb_to_hls((r,g,b))
+            print(f"  {hex_code}: HSL={hls}")
+
+    palette_rows = []
+    color_index = 0
+    for row_index in range(grid_rows): # Reconstruct 2D palette with unique colors
+        row_colors = []
+        for col_index in range(grid_cols):
+            if color_index < len(unique_palette_hex_codes): # Ensure we don't go out of bounds
+                row_colors.append(unique_palette_hex_codes[color_index])
+                color_index += 1
+            else:
+                row_colors.append("#000000") # Or some default color if we run out of unique colors (unlikely but for safety)
+        palette_rows.append(row_colors)
+
+    grid_lines = []
+    for row_index in range(grid_rows):
+        grid_lines.append(get_grid_row(palette_rows, row_index, grid_cols)) # Use the new palette_rows for display
+
+    make_indent = " " * 4
+    print(f"{make_indent + grid_lines[0]}")
+    for i in range(1, grid_rows):
+        print(make_indent + grid_lines[i])
+    print("")
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+def hex_to_rgb_normalised(hex_color: str) -> List[float]:
+    """Convert hex color code to normalised RGB values (0.0-1.0)."""
+    hex_color = hex_color.lstrip('#')
+    return [int(hex_color[i:i+2], 16) / 255.0 for i in (0, 2, 4)]
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+def get_hilbert_curve_index(hex_color: str, p: int = 10, n: int = 2) -> int:
+    """
+    Calculate the Hilbert curve index for a hex color using xy_to_Luv_uv.
+
+    Args:
+        hex_color: The hex color code (e.g., "#RRGGBB").
+        p: Bits per dimension for Hilbert curve (grid size will be 2^p x 2^p).
+        n: Number of dimensions (always 2 for u'v' chromaticity).
+
+    Returns:
+        The Hilbert curve index (integer).
+    """
+    rgb_normalised = hex_to_rgb_normalised(hex_color)
+
+    # Access sRGB color space from the RGB_COLOURSPACES dictionary:
+    try:
+        srgb_colourspace = colour.RGB_COLOURSPACES["sRGB"] # <--- Try accessing sRGB from the dictionary
+    except KeyError:
+        print("Error: 'sRGB' not found in colour.RGB_COLOURSPACES. Check your colour-science installation.")
+        return 0  # Or some other default value to prevent errors
+    rgb_colour_science = np.array(rgb_normalised)
+
+    # Convert sRGB to CIE XYZ
+    xyz = colour.convert(rgb_colour_science, srgb_colourspace.name, 'CIE XYZ')
+
+    # Convert CIE XYZ to CIE xy chromaticity coordinates
+    xy = colour.XYZ_to_xy(xyz)
+
+    # Get CIE Luv u'v' chromaticity coordinates from CIE xy
+    luv_uv = xy_to_Luv_uv(xy)
+    u_prime, v_prime = luv_uv  # xy_to_Luv_uv returns a tuple (u', v')
+
+    # Scale and translate u' and v' to be in the range [0, 1] approximately, then to integers [0, 2^p - 1]
+    u_prime_scaled = int((u_prime * 0.5 + 0.5) * ((2**p) - 1)) # Roughly from -1 to 1, scale to 0-1 and then to 0-1023 (for p=10)
+    v_prime_scaled = int((v_prime * 0.5 + 0.5) * ((2**p) - 1)) # Same for v'
+
+    # Ensure coordinates are within valid range [0, 2^p - 1]
+    u_prime_scaled = max(0, min(2**p - 1, u_prime_scaled))
+    v_prime_scaled = max(0, min(2**p - 1, v_prime_scaled))
+
+    hc = HilbertCurve(p, n)
+    hilbert_index = hc.distance_from_point([u_prime_scaled, v_prime_scaled])
+    return hilbert_index
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+def display_strategy(grid_cols: int, grid_rows: int, palette: List[List[str]]) -> None:
+    print("")
+    palette_1d = [hex_code for row in palette for hex_code in row] # Flatten to 1D list
+    unique_palette_hex_codes = list(set(palette_1d)) # Get unique colors
+
+    # Sort by Hilbert curve index
+    sorted_palette_hex_codes = sorted(unique_palette_hex_codes, key=get_hilbert_curve_index)
+
+    palette_rows = []
+    color_index = 0
+    for row_index in range(grid_rows): # Reconstruct 2D palette with unique colors
+        row_colors = []
+        for col_index in range(grid_cols):
+            if color_index < len(sorted_palette_hex_codes): # Ensure we don't go out of bounds
+                row_colors.append(sorted_palette_hex_codes[color_index])
+                color_index += 1
+            else:
+                row_colors.append("#000000") # Or some default color if we run out of unique colors (unlikely but for safety)
+        palette_rows.append(row_colors)
+
+    grid_lines = []
+    for row_index in range(grid_rows):
+        grid_lines.append(get_grid_row(palette_rows, row_index, grid_cols)) # Use the new palette_rows for display
 
     make_indent = " " * 4
     print(f"{make_indent + grid_lines[0]}")
