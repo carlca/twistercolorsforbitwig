@@ -1,3 +1,6 @@
+# Need new sort algorithm which splits the colors into
+# red dominant, green dominant and blue dominant and sort within those
+
 from PIL import Image
 import random
 import os
@@ -266,7 +269,7 @@ def get_save_location_choice() -> str:
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-def display_strategy_old1(grid_cols: int, grid_rows: int, palette: List[List[str]]) -> None:
+def display_strategy_original(grid_cols: int, grid_rows: int, palette: List[List[str]]) -> None:
     print("")
     palette_1d = list(set([hex_code for row in palette for hex_code in row])) # Flatten, convert to set, back to list
     palette_rows = []
@@ -292,56 +295,12 @@ def display_strategy_old1(grid_cols: int, grid_rows: int, palette: List[List[str
         print(make_indent + grid_lines[i])
     print("")
 
-def display_strategy_old2(grid_cols: int, grid_rows: int, palette: List[List[str]]) -> None:
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+def display_strategy_hls(grid_cols: int, grid_rows: int, palette: List[List[str]]) -> None:
     print("")
     palette_1d = [hex_code for row in palette for hex_code in row] # Flatten to 1D list
     unique_palette_hex_codes = sorted(list(set(palette_1d)), key=lambda hex_code: rgb_to_hls((int(hex_code[1:3], 16), int(hex_code[3:5], 16), int(hex_code[5:7], 16)))) # Flatten, convert to set, back to list and sort all colors
-
-    palette_rows = []
-    color_index = 0
-    for row_index in range(grid_rows): # Reconstruct 2D palette with unique colors
-        row_colors = []
-        for col_index in range(grid_cols):
-            if color_index < len(unique_palette_hex_codes): # Ensure we don't go out of bounds
-                row_colors.append(unique_palette_hex_codes[color_index])
-                color_index += 1
-            else:
-                row_colors.append("#000000") # Or some default color if we run out of unique colors (unlikely but for safety)
-        palette_rows.append(row_colors)
-
-    grid_lines = []
-    for row_index in range(grid_rows):
-        grid_lines.append(get_grid_row(palette_rows, row_index, grid_cols)) # Use the new palette_rows for display
-
-    make_indent = " " * 4
-    print(f"{make_indent + grid_lines[0]}")
-    for i in range(1, grid_rows):
-        print(make_indent + grid_lines[i])
-    print("")
-
-def display_strategy_old3(grid_cols: int, grid_rows: int, palette: List[List[str]]) -> None:
-    print("")
-    palette_1d = [hex_code for row in palette for hex_code in row] # Flatten to 1D list
-    unique_palette_hex_codes = sorted(list(set(palette_1d)), key=lambda hex_code: rgb_to_hls((int(hex_code[1:3], 16), int(hex_code[3:5], 16), int(hex_code[5:7], 16)))) # Flatten, convert to set, back to list and sort all colors
-
-    print("Sorted Hex Codes (First few and last few):") # Added print statement
-    print("First 5:", unique_palette_hex_codes[:min(5, len(unique_palette_hex_codes))]) # Print first few
-    print("Last 5:", unique_palette_hex_codes[max(0, len(unique_palette_hex_codes)-5):]) # Print last few
-
-    print("\nHSL values of sorted hex codes (First few and last few):") # Added print statement
-    for hex_code in unique_palette_hex_codes[:min(5, len(unique_palette_hex_codes))]: # First few
-        r = int(hex_code[1:3], 16)
-        g = int(hex_code[3:5], 16)
-        b = int(hex_code[5:7], 16)
-        hls = rgb_to_hls((r,g,b))
-        print(f"  {hex_code}: HSL={hls}")
-    if len(unique_palette_hex_codes) > 5:
-        for hex_code in unique_palette_hex_codes[max(0, len(unique_palette_hex_codes)-5):]: # Last few
-            r = int(hex_code[1:3], 16)
-            g = int(hex_code[3:5], 16)
-            b = int(hex_code[5:7], 16)
-            hls = rgb_to_hls((r,g,b))
-            print(f"  {hex_code}: HSL={hls}")
 
     palette_rows = []
     color_index = 0
@@ -420,7 +379,7 @@ def get_hilbert_curve_index(hex_color: str, p: int = 10, n: int = 2) -> int:
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
-def display_strategy(grid_cols: int, grid_rows: int, palette: List[List[str]]) -> None:
+def display_strategy_hilbert(grid_cols: int, grid_rows: int, palette: List[List[str]]) -> None:
     print("")
     palette_1d = [hex_code for row in palette for hex_code in row] # Flatten to 1D list
     unique_palette_hex_codes = list(set(palette_1d)) # Get unique colors
@@ -588,7 +547,10 @@ def main():
             bias_amounts = get_color_bias_input(default_to_random, default_to_manual)
 
             palette = generate_palette(grid_cols, grid_rows, bias_amounts)
-            display_strategy(grid_cols, grid_rows, palette)
+
+            display_strategy_original(grid_cols, grid_rows, palette)
+            # display_strategy_hls(grid_cols, grid_rows, palette)
+            # display_strategy_hilbert(grid_cols, grid_rows, palette)
 
             while True: # Bias preview menu loop
                 preview_action = input("Choose option: 'n' - New random bias amounts (default), 'm' - Enter manual bias amounts, 'a' - Accept palette: ").lower()
