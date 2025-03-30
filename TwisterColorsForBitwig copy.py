@@ -8,6 +8,7 @@ class DominantColor(Enum):
     BLUE = "blue"
 
 all_colors: List[Tuple[int, int, int]] = [
+    # (0, 0, 0), # 0
     (0, 0, 255), # 1 - Blue
     (0, 21, 255), # 2 - Blue (Green Rising)
     (0, 34, 255), #
@@ -71,6 +72,7 @@ all_colors: List[Tuple[int, int, int]] = [
     (216, 255, 0), #
     (229, 255, 0), #
     (242, 255, 0), #
+    # (255, 255, 0), # 64 - Green + Red (Yellow)
     (255, 246, 0), # 65 - Red, Green Fading
     (255, 233, 0), #
     (255, 220, 0), #
@@ -113,6 +115,7 @@ all_colors: List[Tuple[int, int, int]] = [
     (255, 0, 221), #
     (255, 0, 233), #
     (255, 0, 246), #
+    # (255, 0, 255), # 107 - Blue + Red
     (242, 0, 255), # 108 - Blue/ Red Fading
     (229, 0, 255), #
     (216, 0, 255), #
@@ -132,30 +135,31 @@ all_colors: List[Tuple[int, int, int]] = [
     (50, 0, 255), #
     (38, 0, 255), #
     (25, 0, 255)] # 126 - Blue-ish
+    # (240, 240, 225)] # 127 - White ?
 
-# def get_non_solo_max_colors(colors: List[Tuple[int, int, int]]) -> List[Tuple[int, int, int]]:
-#     non_solo_colors: List[Tuple[int, int, int]] = []
-#     for color in colors:
-#         r, g, b = color
-#         max_color = max(r, g, b)
-#         count = 0
-#         if r == max_color:
-#             count += 1
-#         if g == max_color:
-#             count += 1
-#         if b == max_color:
-#             count += 1
-#         if count > 1:
-#             non_solo_colors.append(color)
-#     return non_solo_colors
+def get_non_solo_max_colors(colors: List[Tuple[int, int, int]]) -> List[Tuple[int, int, int]]:
+    non_solo_colors: List[Tuple[int, int, int]] = []
+    for color in colors:
+        r, g, b = color
+        max_color = max(r, g, b)
+        count = 0
+        if r == max_color:
+            count += 1
+        if g == max_color:
+            count += 1
+        if b == max_color:
+            count += 1
+        if count > 1:
+            non_solo_colors.append(color)
+    return non_solo_colors
 
-# def get_dom_reds(colors: List[Tuple[int, int, int]]) -> List[Tuple[int, int, int]]:
-#     dom_reds: List[Tuple[int, int, int]] = []
-#     for color in colors:
-#         r, g, b = color
-#         if r == max(r, g, b):
-#             dom_reds.append(color)
-#     return dom_reds
+def get_dom_reds(colors: List[Tuple[int, int, int]]) -> List[Tuple[int, int, int]]:
+    dom_reds: List[Tuple[int, int, int]] = []
+    for color in colors:
+        r, g, b = color
+        if r == max(r, g, b):
+            dom_reds.append(color)
+    return dom_reds
 
 def get_dom_colors(colors: List[Tuple[int, int, int]], dom_color: DominantColor) -> List[Tuple[int, int, int]]:
     dom_colors: List[Tuple[int, int, int]] = []
@@ -179,10 +183,8 @@ def main():
     print(f"\ncolors_27: {colors_27}\n")
     print(f"\ncolors_64: {colors_64}\n")
 
-    # print(f"\nget_non_solo_max_colors(all_colors): {get_non_solo_max_colors(all_colors)}\n")
-    print(f"\nget_dom_colors(all_colors, DominantColor.RED): {get_dom_colors(all_colors, DominantColor.RED)}")
-    print(f"\nget_dom_colors(all_colors, DominantColor.GREEN): {get_dom_colors(all_colors, DominantColor.GREEN)}")
-    print(f"\nget_dom_colors(all_colors, DominantColor.BLUE): {get_dom_colors(all_colors, DominantColor.BLUE)}")
+    print(f"\nget_non_solo_max_colors(all_colors): {get_non_solo_max_colors(all_colors)}\n")
+    print(f"\nget_dom_reds(colors_64): {get_dom_reds(colors_64)}\n")
 
 if __name__ == "__main__":
     main()
