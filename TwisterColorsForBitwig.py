@@ -202,7 +202,6 @@ def display_palette(palette: List[Tuple[int, int, int]]) -> None:
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 def get_palette_size(default: str = "") -> Tuple[str, int]:
-    default = "1" if not default
     while True:
         choice = input(f"\nSelected palette dimensions - '1' - 16x4 or '2' - 9x3 [{default}]: ").strip()
         if not choice:
