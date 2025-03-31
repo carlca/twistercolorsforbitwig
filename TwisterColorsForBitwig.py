@@ -1,11 +1,24 @@
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
 import random
-from typing import List, Tuple, Optional
+import datetime
+from typing import List, Tuple
 from enum import Enum
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 class DominantColor(Enum):
     RED = "red"
     GREEN = "green"
     BLUE = "blue"
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+class PaletteType(Enum):
+    RANDOM = 0
+    SORTED = 1
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 all_colors: List[Tuple[int, int, int]] = [
     (0, 0, 255), # 1 - Blue
@@ -133,8 +146,12 @@ all_colors: List[Tuple[int, int, int]] = [
     (38, 0, 255), #
     (25, 0, 255)] # 126 - Blue-ish
 
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
 def create_palette(size: int) -> List[Tuple[int, int, int]]:
     return random.sample(all_colors, size)
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 def get_dom_colors(colors: List[Tuple[int, int, int]], dom_color: DominantColor) -> List[Tuple[int, int, int]]:
     dom_colors: List[Tuple[int, int, int]] = []
@@ -149,9 +166,7 @@ def get_dom_colors(colors: List[Tuple[int, int, int]], dom_color: DominantColor)
             dom_colors.append(color)
     return dom_colors
 
-def color_block(r: int, g: int, b: int, chars: int = 1) -> str:
-    block = ''.join([" "] * chars)
-    return f"\033[48;2;{r};{g};{b}m{block}\033[0m"
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 def get_dimensions(palette: List[Tuple[int, int, int]]) -> Tuple[int, int]:
     if len(palette) == 27:
@@ -160,7 +175,16 @@ def get_dimensions(palette: List[Tuple[int, int, int]]) -> Tuple[int, int]:
         return (16, 4)
     return (0, 0)
 
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+def color_block(r: int, g: int, b: int, chars: int = 1) -> str:
+    block = ''.join([" "] * chars)
+    return f"\033[48;2;{r};{g};{b}m{block}\033[0m"
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
 def display_palette(palette: List[Tuple[int, int, int]]) -> None:
+    print("")
     (cols, rows) = get_dimensions(palette)
     index = 0
     for row in range(rows):
@@ -175,27 +199,80 @@ def display_palette(palette: List[Tuple[int, int, int]]) -> None:
             index += 1
         print(f"{row_s}")
 
-def get_palette_size() -> int:
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+def get_palette_size(default: str = "") -> Tuple[str, int]:
+    default = "1" if not default
     while True:
-        choice = input("Selected palette dimensions - '1' (9 x 3) or '2' (16 x 4): ").strip()
-        palette_size = 0
-        if choice == "1":
-            palette_size = 27
+        choice = input(f"\nSelected palette dimensions - '1' - 16x4 or '2' - 9x3 [{default}]: ").strip()
+        if not choice:
+            choice = default
+        if choice == "" or choice == "1":
+            return choice, 64
         if choice == "2":
-            palette_size = 64
-        if palette_size > 0:
-            return palette_size
+            return choice, 27
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+def get_palette_type(default: str) -> Tuple[str, PaletteType]:
+    while True:
+        choice = input(f"\nSelected palette type - (R)andom or (S)orted [{default}]: ").strip()
+        if not choice:
+            choice = default
+        if choice == "" or choice == "r":
+            return choice, PaletteType.RANDOM
+        if choice == "s":
+            return choice, PaletteType.SORTED
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+def get_another_palette(default: str) -> Tuple[str, bool]:
+    while True:
+        choice = input(f"\nPlease choose - (A)nother palette or (S)ave to Bitwig [{default}]: ").strip()
+        if not choice:
+            choice = default
+        if choice == "" or choice == "a":
+            return choice, True
+        if choice == "s":
+            return choice, False
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+def generate_filename() -> str:
+    now = datetime.datetime.now()
+    return f"mf_twister {now.strftime("%d.%m.%y %H:%M:%S")}"
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+def get_defaults() -> Tuple[str, str, str]:
+    return ("1", "r", "a")
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 def main():
-    palette = create_palette(get_palette_size())
-    print("")
-    display_palette(palette)
-    print("")
-    sorted_palette = []
-    sorted_palette += sorted(get_dom_colors(palette, DominantColor.RED))
-    sorted_palette += sorted(get_dom_colors(palette, DominantColor.GREEN))
-    sorted_palette += sorted(get_dom_colors(palette, DominantColor.BLUE))
-    display_palette(sorted_palette)
+    def_size, def_type, def_action = get_defaults()
+    while True:
+        def_size, palette_size = get_palette_size(def_size)
+        palette = create_palette(palette_size)
+        def_type, palette_type = get_palette_type(def_type)
+        match palette_type:
+            case PaletteType.RANDOM:
+                display_palette(palette)
+            case PaletteType.SORTED:
+                sorted_palette = []
+                sorted_palette += sorted(get_dom_colors(palette, DominantColor.RED))
+                sorted_palette += sorted(get_dom_colors(palette, DominantColor.GREEN))
+                sorted_palette += sorted(get_dom_colors(palette, DominantColor.BLUE))
+                display_palette(sorted_palette)
+        def_action, do_another = get_another_palette(def_action)
+        if not do_another:
+            break
+
+    print(generate_filename())
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 if __name__ == "__main__":
     main()
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
