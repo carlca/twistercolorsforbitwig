@@ -1,5 +1,5 @@
 import random
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from enum import Enum
 
 class DominantColor(Enum):
@@ -133,6 +133,9 @@ all_colors: List[Tuple[int, int, int]] = [
     (38, 0, 255), #
     (25, 0, 255)] # 126 - Blue-ish
 
+def create_palette(size: int) -> List[Tuple[int, int, int]]:
+    return random.sample(all_colors, size)
+
 def get_dom_colors(colors: List[Tuple[int, int, int]], dom_color: DominantColor) -> List[Tuple[int, int, int]]:
     dom_colors: List[Tuple[int, int, int]] = []
     for color in colors:
@@ -150,58 +153,49 @@ def color_block(r: int, g: int, b: int, chars: int = 1) -> str:
     block = ''.join([" "] * chars)
     return f"\033[48;2;{r};{g};{b}m{block}\033[0m"
 
-def display_palette(palette: List[Tuple[int, int, int]], cols: int, rows: int) -> None:
+def get_dimensions(palette: List[Tuple[int, int, int]]) -> Tuple[int, int]:
+    if len(palette) == 27:
+        return (9, 3)
+    if len(palette) == 64:
+        return (16, 4)
+    return (0, 0)
+
+def display_palette(palette: List[Tuple[int, int, int]]) -> None:
+    (cols, rows) = get_dimensions(palette)
     index = 0
-    max_index = len(palette)
     for row in range(rows):
         row_s = ''
         for col in range(cols):
-            if index >= max_index:
+            if index >= cols * rows:
                 print(f"{row_s}")
                 return
             r, g, b = palette[index]
             block = color_block(r, g, b, 2)
             row_s += block
-            # print(block)
             index += 1
         print(f"{row_s}")
 
-def sort_palette(palette: List[Tuple[int, int, int]]) -> List[Tuple[int, int, int]]:
-    sorted = []
-    return sorted
+def get_palette_size() -> int:
+    while True:
+        choice = input("Selected palette dimensions - '1' (9 x 3) or '2' (16 x 4): ").strip()
+        palette_size = 0
+        if choice == "1":
+            palette_size = 27
+        if choice == "2":
+            palette_size = 64
+        if palette_size > 0:
+            return palette_size
 
 def main():
-    print(f"\n\nall_colors: {all_colors}\n")
-
-    colors_27: List[Tuple[int, int, int]] = random.sample(all_colors, 27)
-    colors_64: List[Tuple[int, int, int]] = random.sample(all_colors, 64)
-
-    # print(f"\ncolors_27: {colors_27}\n")
-    # print(f"\ncolors_64: {colors_64}\n")
-
-    # print(f"\nget_non_solo_max_colors(all_colors): {get_non_solo_max_colors(all_colors)}\n")
-    # print(f"\nget_dom_colors(all_colors, DominantColor.RED): {get_dom_colors(all_colors, DominantColor.RED)}")
-    # print(f"\nget_dom_colors(all_colors, DominantColor.GREEN): {get_dom_colors(all_colors, DominantColor.GREEN)}")
-    # print(f"\nget_dom_colors(all_colors, DominantColor.BLUE): {get_dom_colors(all_colors, DominantColor.BLUE)}")
-
-    display_palette(colors_64, 16, 4)
-    display_palette(colors_64, 8, 8)
-
-    sorted_colors = []
-
-    red_colors = get_dom_colors(all_colors, DominantColor.RED)
-    red_colors.sort()
-    sorted_colors += red_colors
-
-    green_colors = get_dom_colors(all_colors, DominantColor.GREEN)
-    green_colors.sort()
-    sorted_colors += green_colors
-
-    blue_colors = get_dom_colors(all_colors, DominantColor.BLUE)
-    blue_colors.sort()
-    sorted_colors += blue_colors
-
-    display_palette(sorted_colors, 16, 16)
+    palette = create_palette(get_palette_size())
+    print("")
+    display_palette(palette)
+    print("")
+    sorted_palette = []
+    sorted_palette += sorted(get_dom_colors(palette, DominantColor.RED))
+    sorted_palette += sorted(get_dom_colors(palette, DominantColor.GREEN))
+    sorted_palette += sorted(get_dom_colors(palette, DominantColor.BLUE))
+    display_palette(sorted_palette)
 
 if __name__ == "__main__":
     main()
