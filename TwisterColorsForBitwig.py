@@ -1,9 +1,17 @@
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+#
+#  TwisterColorsForBitwig.py
+#
+#  written by Carl Caulkett with inspirartion from @derpcat
+#
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
+import os
 import random
 import datetime
 from typing import List, Tuple
 from enum import Enum
+from PIL import Image
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
@@ -17,6 +25,11 @@ class DominantColor(Enum):
 class PaletteType(Enum):
     RANDOM = 0
     SORTED = 1
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+USER_DOCUMENTS: str = os.path.expanduser("~/Documents")
+BITWIG_PALETTE_DIR: str = os.path.join(USER_DOCUMENTS, "Bitwig Studio", "Color Palettes")
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
@@ -239,12 +252,30 @@ def get_another_palette(default: str) -> Tuple[str, bool]:
 
 def generate_filename() -> str:
     now = datetime.datetime.now()
-    return f"mf_twister {now.strftime("%d.%m.%y %H:%M:%S")}"
+    return f"mf_twister {now.strftime("%d.%m.%y %H.%M.%S.png")}"
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
 def get_defaults() -> Tuple[str, str, str]:
     return ("1", "r", "a")
+
+# ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+
+def create_palette_image(palette: List[Tuple[int, int, int]]) -> str:
+    (cols, rows) = get_dimensions(palette)
+    image = Image.new("RGB", (cols, rows))
+    pixels = image.load()
+    index = 0
+    for row in range(rows):
+        for col in range(cols):
+            r, g, b = palette[index]
+            if pixels:
+                pixels[col, row] = (r, g, b)
+            index += 1
+    filename = generate_filename()
+    filepath = os.path.join(BITWIG_PALETTE_DIR, filename)
+    image.save(filepath)
+    return filepath
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
@@ -262,12 +293,13 @@ def main():
                 sorted_palette += sorted(get_dom_colors(palette, DominantColor.RED))
                 sorted_palette += sorted(get_dom_colors(palette, DominantColor.GREEN))
                 sorted_palette += sorted(get_dom_colors(palette, DominantColor.BLUE))
-                display_palette(sorted_palette)
+                palette = sorted_palette
+                display_palette(palette)
         def_action, do_another = get_another_palette(def_action)
         if not do_another:
             break
 
-    print(generate_filename())
+    print(f"\nPalette saved in {create_palette_image(palette)}")
 
 # ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
 
